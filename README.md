@@ -1,46 +1,43 @@
-# Getting Started with Create React App
+# 概要
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React の再レンダリングについてお勉強
 
-## Available Scripts
+## 事象
 
-In the project directory, you can run:
++1 を押すと、ChildComponent まで再レンダリングされてしまう
 
-### `npm start`
+## なぜ再レンダリングされてしまうのか
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+React はレンダリングされる際に props が変わったかどうかは気にしていない。<br>
+なので子のコンポーネントも無条件にレンダリングされてしまう。<br>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 改善方法
 
-### `npm test`
+親のコンポーネントがレンダリングされると子も無条件にレンダリングされてしまうので、対処するには<br>
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- 子のコンポーネントをメモ化する
+- 子に渡している関数がある場合は関数をメモ化する
 
-### `npm run build`
+## 子コンポーネントのメモ化
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+子コンポーネントをメモ化させることで、props に変更がない時はレンダリングを止めることができる。<br>
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## コールバック関数のメモ化
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+上記を行っても、コンポーネントのメモ化だけでは無駄なレンダリングを止めることはできない<br>
+なぜなら親コンポーネント側で関数を作成して Props として渡すと、レンダリングする度に新しい関数の参照が作成されるので、せっかくコンポーネントをメモ化させても Props で渡された関数が以前の参照と異なるので、レンダリングされてしまう。<br>
+そのため useCallback()を使う<br>
+useCallback はメモ化されているコンポーネントに関数を渡したい時に力を発揮する。メモ化されていないコンポーネントにメモ化した関数を渡しても意味はない。
 
-### `npm run eject`
+## 毎回コンポーネントや関数をメモ化すべきか
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+必要ない<br>
+以下の場合にメモ化が必要<br>
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- 数千件・数万件のデータを計算するロジックが含まれた関数など
+- 一秒毎にレンダリングされるコンポーネントがあるなど
+- カスタム hooks を作る時
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 参考
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+https://tech.jxpress.net/entry/2021/08/04/140249
